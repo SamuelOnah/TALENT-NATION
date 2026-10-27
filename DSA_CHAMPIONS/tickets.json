@@ -43,5 +43,20 @@
         "id": 9,
         "title": "connnection",
         "description": "is badd\u001b[3~"
+    },
+    {
+        "id": 10,
+        "title": "wifii",
+        "description": "wifi"
+    },
+    {
+        "id": 11,
+        "title": "wifi",
+        "description": "wifi is slow"
+    },
+    {
+        "id": 12,
+        "title": "wifi",
+        "description": "wifi is slow"
     }
 ]
