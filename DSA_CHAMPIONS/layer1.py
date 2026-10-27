@@ -7,17 +7,20 @@ FILE = "tickets.json"
 
 def analyze_ticket_with_ai(description):
     try:
+        raw_key = os.environ.get("GEMINI_API_KEY")
+        print(f"[DEBUG] Key loaded: {raw_key[:6]}..." if raw_key else "[DEBUG] Key is None!")
+        
         client = genai.Client()
-
-        prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it:{description}"
-
+        
+        prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it: {description}"
+        
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-3.8-flash',
             contents=prompt,
         )
         return response.text
     except Exception as e:
-        return f"Could not fetch AI suggestions a this time. (Error: {e})"
+        return f"Could not fetch AI suggestions at this time. (Error: {e})"
 
 def create_ticket():
     title =  input("Enter title: ").strip()

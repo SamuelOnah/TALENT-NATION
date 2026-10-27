@@ -2,22 +2,22 @@
     {
         "id": 1,
         "title": "wifi",
-        "description": "wifi is slow"
+        "description": "wifi"
     },
     {
         "id": 2,
-        "title": "WIFI",
-        "description": "WIFI IS SLOW"
+        "title": "wifi",
+        "description": "slow"
     },
     {
         "id": 3,
-        "title": "phone",
-        "description": "xr is hot"
+        "title": "wifi",
+        "description": "wifi is slow"
     },
     {
         "id": 4,
         "title": "wifi",
-        "description": "wifi is slow"
+        "description": "wifi is hugh"
     },
     {
         "id": 5,
@@ -31,22 +31,7 @@
     },
     {
         "id": 7,
-        "title": "wifi",
-        "description": "wifi is slow"
-    },
-    {
-        "id": 8,
-        "title": "wifi",
-        "description": "wifi is slow"
-    },
-    {
-        "id": 9,
-        "title": "wifi",
-        "description": "wifi"
-    },
-    {
-        "id": 10,
-        "title": "ayuba",
-        "description": "music"
+        "title": "onah",
+        "description": "descrption"
     }
 ]
