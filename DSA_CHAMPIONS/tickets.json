@@ -2,11 +2,6 @@
     {
         "id": 1,
         "title": "wifi",
-        "description": "slow network"
-    },
-    {
-        "id": 2,
-        "title": "battery",
-        "description": "low solar power"
+        "description": "wifi is slow"
     }
 ]
