@@ -53,14 +53,17 @@ def create_ticket():
     try:
         with open(FILE, "w") as file:
             json.dump(tickets, file, indent=4)
-        print(f"Ticket created successfully! {FILE}")
 
-        print("\Getting AI suggestions...")
+        print("Ticket created successfully.")
+        print(f"\nID: {ticket_id}")
+        print(f"Description: {description}")
+
+        print("\nGetting AI suggestions...")
         ai_suggestion = analyze_ticket_with_ai(description)
-        print("\nAI suggestions:")
+        print("suggestions:")
         print(ai_suggestion)        
     except OSError:
-        print("Error: could not write to ticket file")
+        print("Error: could not write to ticket")
 
 if __name__ == "__main__":
     create_ticket()
