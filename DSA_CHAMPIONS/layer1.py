@@ -1,26 +1,43 @@
 import json
 import os
 from google import genai
+import time
+
 
 FILE = "tickets.json"
 
+def choose_ai_model():
+    print("\nSelect AI Provider:")
+    print("1. Gemini")
+    print("2. OpenRouter")
+    print("3. Grok")
+    
+    choice = input("Enter choice (1-3, default 1): ").strip()
+    
+    if choice == "2":
+        return "openrouter"
+    elif choice == "3":
+        return "grok"
+    else:
+        return "gemini"
 
 def analyze_ticket_with_ai(description):
-    try:
-        raw_key = os.environ.get("GEMINI_API_KEY")
-        print(f"[DEBUG] Key loaded: {raw_key[:6]}..." if raw_key else "[DEBUG] Key is None!")
-        
-        client = genai.Client()
-        
-        prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it: {description}"
-        
-        response = client.models.generate_content(
-            model='gemini-3.8-flash',
-            contents=prompt,
-        )
-        return response.text
-    except Exception as e:
-        return f"Could not fetch AI suggestions at this time. (Error: {e})"
+    client = genai.Client()
+    prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it: {description}"
+    
+    for attempt in range(3):
+        try:
+            response = client.models.generate_content(
+                model='gemini-3.8-flash',
+                contents=prompt,
+            )
+            return response.text
+        except Exception as e:
+
+            if "503" in str(e) and attempt < 2:
+                time.sleep(2)
+                continue
+            return f"Could not fetch AI suggestions at this time. (Error: {e})"
 
 def create_ticket():
     title =  input("Enter title: ").strip()
