@@ -2,11 +2,11 @@
     {
         "id": 1,
         "title": "wifi",
-        "description": "is slwo"
+        "description": "is high"
     },
     {
         "id": 2,
-        "title": "wwifi",
-        "description": "is slow"
+        "title": "wifi",
+        "description": "is available for everyone"
     }
 ]

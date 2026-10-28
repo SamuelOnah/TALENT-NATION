@@ -11,7 +11,6 @@ load_dotenv()
 FILE = "tickets.json"
 
 def choose_ai_model():
-    """Prompts the user to explicitly choose an AI provider with no default fallback."""
     print("\nSelect AI Provider:")
     print("1. Gemini")
     print("2. OpenRouter")
@@ -30,7 +29,6 @@ def choose_ai_model():
 
 
 def analyze_ticket_with_ai(description, provider):
-    """Routes the ticket description to the selected AI provider."""
     prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it: {description}"
     
     try:
