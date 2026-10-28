@@ -38,7 +38,7 @@ def analyze_ticket_with_ai(description, provider):
             for attempt in range(3):
                 try:
                     response = client.models.generate_content(
-                        models='gemini-3.8-flash',
+                        model='gemini-3.8-flash',
                         contents=prompt,
                     )
                     return response.text
