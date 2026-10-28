@@ -67,6 +67,7 @@ if submitted:
                     contents=prompt,
                 )
                 ai_suggestion = response.text
+
                 
             elif provider == "openrouter":
                 client = OpenAI(
