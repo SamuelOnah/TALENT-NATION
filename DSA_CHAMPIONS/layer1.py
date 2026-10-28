@@ -1,25 +1,32 @@
 import json
 import os
+import time
+from dotenv import load_dotenv
 from openai import OpenAI  
 from google import genai
-import time
+from groq import Groq
+
+load_dotenv()
 
 FILE = "tickets.json"
 
 def choose_ai_model():
+    """Prompts the user to explicitly choose an AI provider with no default fallback."""
     print("\nSelect AI Provider:")
     print("1. Gemini")
     print("2. OpenRouter")
-    print("3. Grok")
+    print("3. Groq")
     
-    choice = input("Enter choice (1-3, default 1): ").strip()
-    
-    if choice == "2":
-        return "openrouter"
-    elif choice == "3":
-        return "grok"
-    else:
-        return "gemini"
+    while True:
+        choice = input("Enter choice (1, 2, or 3): ").strip()
+        if choice == "1":
+            return "gemini"
+        elif choice == "2":
+            return "openrouter"
+        elif choice == "3":
+            return "groq"
+        else:
+            print("Invalid choice. Please enter 1, 2, or 3.")
 
 
 def analyze_ticket_with_ai(description, provider):
@@ -28,17 +35,17 @@ def analyze_ticket_with_ai(description, provider):
     
     try:
         if provider == "gemini":
-            client = genai.Client()  
+            client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
             
             for attempt in range(3):
                 try:
                     response = client.models.generate_content(
-                        model='gemini-3.8-flash',
+                        model='gemini-2.5-flash',
                         contents=prompt,
                     )
                     return response.text
                 except Exception as e:
-                    if "503" in str(e) and attempt < 2:
+                    if attempt < 2:
                         time.sleep(2)
                         continue
                     raise e
@@ -54,13 +61,12 @@ def analyze_ticket_with_ai(description, provider):
             )
             return response.choices[0].message.content
             
-        elif provider == "grok":
-            client = OpenAI(
-                base_url="https://api.x.ai/v1",
-                api_key=os.environ.get("XAI_API_KEY")
+        elif provider == "groq":
+            client = Groq(
+                api_key=os.environ.get("GROQ_API_KEY")
             )
             response = client.chat.completions.create(
-                model="grok-2-latest",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "user", "content": prompt}]
             )
             return response.choices[0].message.content
@@ -84,7 +90,7 @@ def create_ticket():
             with open(FILE, "r") as file:
                 tickets = json.load(file)
         except (json.JSONDecodeError, OSError):
-            print("Error: could'nt read tickets.json")
+            print("Error: couldn't read tickets.json")
             tickets = []
 
     ticket_id = max(
