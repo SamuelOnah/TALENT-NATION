@@ -1,9 +1,8 @@
 import os
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
 import json
 from pathlib import Path
 
@@ -14,21 +13,24 @@ from groq import Groq
 
 app = FastAPI(title="Campus Ticket AI Playground")
 
-# Data file for persistent tickets
+# Data file for persistent tickets storage
 TICKETS_FILE = Path("tickets.json")
 
 def load_tickets():
     if TICKETS_FILE.exists():
         try:
             with open(TICKETS_FILE, "r") as f:
-                return json.load(f)
+                content = f.read()
+                if not content.strip():
+                    return []
+                return json.loads(content)
         except Exception:
             return []
     return []
 
 def save_tickets(tickets):
     with open(TICKETS_FILE, "w") as f:
-        json.dump(tickets, f, indent=2)
+        json.dump(tickets, f, indent=4)
 
 def run_ai_analysis(description: str, provider: str) -> str:
     prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it. Wrap key terms or emphasis in double asterisks like **this**: {description}"
@@ -39,7 +41,7 @@ def run_ai_analysis(description: str, provider: str) -> str:
                 return "❌ Error: GEMINI_API_KEY is missing in your environment variables."
             client = genai.Client(api_key=api_key)
             response = client.models.generate_content(
-                model='gemini-3.6-flash',
+                model='gemini-2.0-flash',
                 contents=prompt,
             )
             return response.text
@@ -106,7 +108,7 @@ async def home(request: Request):
                 Campus Ticket <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">AI Playground</span>
             </h1>
             <p class="text-slate-400 text-sm max-w-lg mx-auto">
-                Submit IT support issues and harness real-time multi-model intelligence to resolve campus requests instantly.
+                Submit IT support issues and leverage real-time multi-model intelligence (Gemini, OpenRouter, Groq) instantly.
             </p>
         </header>
 
@@ -124,13 +126,13 @@ async def home(request: Request):
                     <form id="ticketForm" class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Issue Title</label>
-                            <input type="text" id="title" required placeholder="e.g., Slow Wi-Fi in Library" 
+                            <input type="text" id="title" required placeholder="e.g., Projector connection broken" 
                                 class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Description</label>
-                            <textarea id="description" rows="3" required placeholder="Describe the problem in detail..." 
+                            <textarea id="description" rows="3" required placeholder="Describe the problem..." 
                                 class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"></textarea>
                         </div>
 
@@ -150,8 +152,11 @@ async def home(request: Request):
                     </form>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-slate-800/80 text-xs text-slate-500 text-center">
-                    Render Cloud Environment • Ready
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">JSON Storage Ready</span>
+                    <a href="/api/tickets" target="_blank" class="text-xs text-cyan-400 hover:underline flex items-center gap-1">
+                        View JSON Data &rarr;
+                    </a>
                 </div>
             </section>
 
@@ -170,7 +175,7 @@ async def home(request: Request):
                 </div>
 
                 <div id="terminalOutput" class="code-font text-xs bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 flex-grow overflow-y-auto max-h-[420px] custom-scrollbar space-y-4 text-slate-300">
-                    <div class="text-cyan-400">✨ System online. Waiting for ticket submission...</div>
+                    <div class="text-cyan-400">✨ System online. Submissions auto-sync to tickets.json...</div>
                 </div>
             </section>
 
@@ -185,13 +190,12 @@ async def home(request: Request):
         <script>
             function formatMarkdown(text) {
                 if (!text) return '';
-                // Escape HTML to prevent injection, then format **text** to <strong>
                 const escaped = text
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;");
                 
-                // Convert **text** at beginning/end or anywhere to <strong>text</strong>
+                // Convert **text** anywhere into bold html elements
                 return escaped.replace(/\\*\\*(.*?)\\*\\*/g, '<strong class="text-cyan-300 font-semibold">$1</strong>');
             }
 
@@ -219,7 +223,7 @@ async def home(request: Request):
                 btn.disabled = true;
                 btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analyzing with ${provider.toUpperCase()}...`;
 
-                appendTerminal(`<div><span class="text-slate-500">[$]</span> <span class="text-indigo-400">Creating ticket & analyzing with ${provider.toUpperCase()}...</span></div>`);
+                appendTerminal(`<div><span class="text-slate-500">[$]</span> <span class="text-indigo-400">Saving ticket & querying ${provider.toUpperCase()}...</span></div>`);
 
                 try {
                     const response = await fetch('/api/tickets', {
@@ -234,7 +238,7 @@ async def home(request: Request):
                         const formattedAnalysis = formatMarkdown(data.analysis);
                         appendTerminal(`
                             <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3 space-y-2">
-                                <div class="text-emerald-400 font-bold">✅ Ticket #${data.id} Created Successfully!</div>
+                                <div class="text-emerald-400 font-bold">✅ Ticket #${data.id} Saved & Processed!</div>
                                 <div class="text-white"><span class="text-slate-400">Title:</span> ${data.title}</div>
                                 <div class="text-slate-300 border-t border-slate-800 pt-2 mt-1">
                                     <div class="text-cyan-400 font-semibold mb-1">--- AI Suggestions (${provider}) ---</div>
@@ -242,6 +246,8 @@ async def home(request: Request):
                                 </div>
                             </div>
                         `);
+                        document.getElementById('title').value = '';
+                        document.getElementById('description').value = '';
                     } else {
                         appendTerminal(`<div class="text-rose-400">❌ Error: ${data.detail || 'Failed to process ticket.'}</div>`);
                     }
@@ -278,6 +284,12 @@ async def create_ticket(title: str = Form(...), description: str = Form(...), pr
     save_tickets(tickets)
     
     return ticket_data
+
+@app.get("/api/tickets", response_class=JSONResponse)
+async def get_all_tickets():
+    """Returns all aggregated tickets formatted in clean JSON arrays."""
+    tickets = load_tickets()
+    return tickets
 
 if __name__ == "__main__":
     import uvicorn
