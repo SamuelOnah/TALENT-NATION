@@ -41,7 +41,7 @@ def run_ai_analysis(description: str, provider: str) -> str:
                 return "❌ Error: GEMINI_API_KEY is missing in your environment variables."
             client = genai.Client(api_key=api_key)
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-3.8-flash',
                 contents=prompt,
             )
             return response.text
@@ -66,7 +66,7 @@ def run_ai_analysis(description: str, provider: str) -> str:
                 return "❌ Error: GROQ_API_KEY is missing in your environment variables."
             client = Groq(api_key=api_key)
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "user", "content": prompt}]
             )
             return response.choices[0].message.content
