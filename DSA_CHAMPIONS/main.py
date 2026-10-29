@@ -15,7 +15,7 @@ FILE = "tickets.json"
 
 class CommandRequest(BaseModel):
     command: str
-    provider: str = "gemini" # gemini, openrouter, groq
+    provider: str = "gemini"
 
 def run_ai_analysis(description: str, provider: str) -> str:
     prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it: {description}"
@@ -23,7 +23,7 @@ def run_ai_analysis(description: str, provider: str) -> str:
         if provider == "gemini":
             client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-3.8-flash',
                 contents=prompt,
             )
             return response.text
@@ -48,8 +48,7 @@ def run_ai_analysis(description: str, provider: str) -> str:
 
 @app.get("/", response_class=HTMLResponse)
 def terminal_ui():
-    return """
-<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -100,12 +99,13 @@ Available commands:
                 const cmd = cmdInput.value.trim();
                 if (!cmd) return;
                 
-                output.innerHTML += `\\n$ ${cmd}\\n`;
+                output.innerText += "\\n$ " + cmd + "\\n";
                 cmdInput.value = '';
                 output.scrollTop = output.scrollHeight;
 
                 if (cmd.toLowerCase() === 'help') {
-                    output.innerHTML += `Commands:\\n  help - View help\\n  list - View tickets\\n  create <title> | <description> - Create ticket & analyze with AI\\n\\n`;
+                    output.innerText += "Commands:\\n  help - View help\\n  list - View tickets\\n  create <title> | <description> - Create ticket & analyze with AI\\n\\n";
+                    output.scrollTop = output.scrollHeight;
                     return;
                 }
 
@@ -113,34 +113,34 @@ Available commands:
                     try {
                         const res = await fetch('/tickets');
                         const data = await res.json();
-                        output.innerHTML += JSON.stringify(data, null, 2) + '\\n\\n';
+                        output.innerText += JSON.stringify(data, null, 2) + "\\n\\n";
                     } catch (err) {
-                        output.innerHTML += `Error fetching tickets.\\n\\n`;
+                        output.innerText += "Error fetching tickets.\\n\\n";
                     }
                     output.scrollTop = output.scrollHeight;
                     return;
                 }
 
-                // Send to backend execution
                 try {
-                    output.innerHTML += `Processing via ${providerSelect.value}...\\n`;
+                    output.innerText += "Processing via " + providerSelect.value + "...\\n";
+                    output.scrollTop = output.scrollHeight;
+                    
                     const res = await fetch('/run', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ command: cmd, provider: providerSelect.value })
                     });
                     const result = await res.json();
-                    output.innerHTML += result.output + '\\n\\n';
+                    output.innerText += result.output + "\\n\\n";
                 } catch (err) {
-                    output.innerHTML += `Execution failed.\\n\\n`;
+                    output.innerText += "Execution failed.\\n\\n";
                 }
                 output.scrollTop = output.scrollHeight;
             }
         });
     </script>
 </body>
-</html>
-"""
+</html>"""
 
 @app.get("/tickets")
 def get_tickets():
@@ -163,7 +163,6 @@ def run_command(req: CommandRequest):
         title = parts[0].strip()
         description = parts[1].strip()
 
-        # Load existing tickets
         tickets = []
         if os.path.exists(FILE):
             try:
@@ -181,13 +180,12 @@ def run_command(req: CommandRequest):
         except:
             return {"output": "❌ Error writing to tickets storage."}
 
-        # Run AI analysis
         ai_suggestion = run_ai_analysis(description, req.provider)
         
-        response_text = f"✅ Ticket #{ticket_id} Created Successfully!\\n" \
-                        f"Title: {title}\\n" \
-                        f"Description: {description}\\n" \
-                        f"--- AI Suggestions ({req.provider.capitalize()}) ---\\n" \
+        response_text = f"✅ Ticket #{ticket_id} Created Successfully!\n" \
+                        f"Title: {title}\n" \
+                        f"Description: {description}\n" \
+                        f"--- AI Suggestions ({req.provider.capitalize()}) ---\n" \
                         f"{ai_suggestion}"
         return {"output": response_text}
 
