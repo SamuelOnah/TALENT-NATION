@@ -41,7 +41,7 @@ def run_ai_analysis(description: str, provider: str) -> str:
                 return "❌ Error: GEMINI_API_KEY is missing in your environment variables."
             client = genai.Client(api_key=api_key)
             response = client.models.generate_content(
-                model='gemini-3.8-flash',
+                model='gemini-3.5-flash',
                 contents=prompt,
             )
             return response.text
