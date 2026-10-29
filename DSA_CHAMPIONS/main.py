@@ -17,6 +17,11 @@ class CommandRequest(BaseModel):
     command: str
     provider: str = "gemini"
 
+class TicketRequest(BaseModel):
+    title: str
+    description: str
+    provider: str = "gemini"
+
 def run_ai_analysis(description: str, provider: str) -> str:
     prompt = f"Analyze this campus tech problem and suggest 3-4 concise ways to fix or investigate it: {description}"
     try:
@@ -53,58 +58,114 @@ def terminal_ui():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Ticket AI Terminal</title>
+    <title>Campus Ticket AI Playground</title>
     <style>
         body { background-color: #0d1117; color: #58a6ff; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .container { max-width: 950px; margin: auto; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         h1 { color: #f0f6fc; font-size: 1.5rem; margin-top: 0; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        #output { height: 400px; overflow-y: auto; background: #010409; padding: 15px; border-radius: 6px; border: 1px solid #30363d; margin-bottom: 15px; white-space: pre-wrap; font-size: 14px; line-height: 1.4; color: #c9d1d9; }
-        .input-row { display: flex; gap: 10px; align-items: center; }
-        select, input { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; padding: 10px; border-radius: 6px; font-family: inherit; outline: none; }
-        select { cursor: pointer; }
-        input { flex-grow: 1; }
-        input:focus, select:focus { border-color: #58a6ff; }
-        .help-text { color: #8b949e; font-size: 0.85rem; margin-top: 10px; }
+        
+        .panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        @media (max-width: 768px) { .panel { grid-template-columns: 1fr; } }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; background: #010409; padding: 15px; border-radius: 6px; border: 1px solid #30363d; }
+        label { color: #f0f6fc; font-size: 0.9rem; font-weight: bold; }
+        input, textarea, select { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; padding: 10px; border-radius: 6px; font-family: inherit; outline: none; }
+        input:focus, textarea:focus, select:focus { border-color: #58a6ff; }
+        textarea { resize: vertical; height: 80px; }
+        
+        button { background: #238636; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+        button:hover { background: #2ea043; }
+
+        #output { height: 320px; overflow-y: auto; background: #010409; padding: 15px; border-radius: 6px; border: 1px solid #30363d; white-space: pre-wrap; font-size: 14px; line-height: 1.4; color: #c9d1d9; margin-bottom: 15px; }
+        
+        .cli-row { display: flex; gap: 10px; align-items: center; background: #010409; padding: 10px; border-radius: 6px; border: 1px solid #30363d; }
+        .cli-row input { flex-grow: 1; border: none; background: transparent; color: #58a6ff; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>⚡ Campus Ticket Web Terminal</h1>
-        <div id="output">Welcome to the Campus Ticket AI Terminal!
-Type commands below or click 'help' to see available options.
-
-Available commands:
-  help                             - Show command instructions
-  create <title> | <description>   - Create a ticket and run AI analysis
-  list                             - View saved tickets
+        <h1>⚡ Campus Ticket AI Playground</h1>
+        
+        <!-- Top Output Screen -->
+        <div id="output">Welcome to the Campus Ticket AI Playground!
+Use the form below to submit a tech issue or type commands in the terminal bar.
 </div>
-        <div class="input-row">
-            <select id="provider">
-                <option value="gemini">Gemini</option>
-                <option value="openrouter">OpenRouter</option>
-                <option value="groq">Groq</option>
-            </select>
-            <input type="text" id="cmdInput" placeholder="Enter command (e.g., create Wi-Fi | Library network is dropping)..." autofocus>
+
+        <!-- Input Panel: Easy Form -->
+        <div class="panel">
+            <div class="form-group">
+                <label for="ticketTitle">Ticket Title</label>
+                <input type="text" id="ticketTitle" placeholder="e.g., Wi-Fi Down in Hall A">
+                
+                <label for="aiProvider">AI Provider</label>
+                <select id="aiProvider">
+                    <option value="gemini">Gemini (Flash)</option>
+                    <option value="openrouter">OpenRouter (GPT-4o-mini)</option>
+                    <option value="groq">Groq (OSS-20b)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="ticketDesc">Problem Description</label>
+                <textarea id="ticketDesc" placeholder="Describe the issue in detail here..."></textarea>
+                <button id="submitBtn">🚀 Submit & Run AI Analysis</button>
+            </div>
         </div>
-        <div class="help-text">Tip: Use format <b>create Title | Description</b> to submit tickets.</div>
+
+        <!-- Bottom Terminal Command Line -->
+        <div class="cli-row">
+            <span style="color: #8b949e;">$</span>
+            <input type="text" id="cmdInput" placeholder="Terminal command (type 'help' or 'list')...">
+        </div>
     </div>
 
     <script>
         const output = document.getElementById('output');
+        const submitBtn = document.getElementById('submitBtn');
+        const titleInput = document.getElementById('ticketTitle');
+        const descInput = document.getElementById('ticketDesc');
+        const providerSelect = document.getElementById('aiProvider');
         const cmdInput = document.getElementById('cmdInput');
-        const providerSelect = document.getElementById('provider');
+
+        async function processSubmission(title, description, provider) {
+            if (!title || !description) {
+                output.innerText += "\\n❌ Error: Please provide both a title and description.\\n\\n";
+                output.scrollTop = output.scrollHeight;
+                return;
+            }
+
+            output.innerText += `\\n🚀 Creating ticket & analyzing with ${provider.toUpperCase()}...\\n`;
+            output.scrollTop = output.scrollHeight;
+
+            try {
+                const res = await fetch('/api/ticket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description, provider })
+                });
+                const result = await res.json();
+                output.innerText += result.output + "\\n\\n";
+            } catch (err) {
+                output.innerText += "❌ Execution failed.\\n\\n";
+            }
+            output.scrollTop = output.scrollHeight;
+        }
+
+        submitBtn.addEventListener('click', () => {
+            processSubmission(titleInput.value.trim(), descInput.value.trim(), providerSelect.value);
+        });
 
         cmdInput.addEventListener('keydown', async function(e) {
             if (e.key === 'Enter') {
                 const cmd = cmdInput.value.trim();
                 if (!cmd) return;
                 
-                output.innerText += "\\n$ " + cmd + "\\n";
+                output.innerText += `\\n$ ${cmd}\\n`;
                 cmdInput.value = '';
                 output.scrollTop = output.scrollHeight;
 
                 if (cmd.toLowerCase() === 'help') {
-                    output.innerText += "Commands:\\n  help - View help\\n  list - View tickets\\n  create <title> | <description> - Create ticket & analyze with AI\\n\\n";
+                    output.innerText += "Commands:\\n  help - View help\\n  list - View tickets\\n  Or use the form above to submit issues easily!\\n\\n";
                     output.scrollTop = output.scrollHeight;
                     return;
                 }
@@ -122,9 +183,6 @@ Available commands:
                 }
 
                 try {
-                    output.innerText += "Processing via " + providerSelect.value + "...\\n";
-                    output.scrollTop = output.scrollHeight;
-                    
                     const res = await fetch('/run', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -151,6 +209,34 @@ def get_tickets():
             return json.load(f)
     except:
         return []
+
+@app.post("/api/ticket")
+def create_ticket_form(req: TicketRequest):
+    tickets = []
+    if os.path.exists(FILE):
+        try:
+            with open(FILE, "r") as f:
+                tickets = json.load(f)
+        except:
+            tickets = []
+
+    ticket_id = max([t["id"] for t in tickets], default=0) + 1
+    tickets.append({"id": ticket_id, "title": req.title, "description": req.description})
+
+    try:
+        with open(FILE, "w") as f:
+            json.dump(tickets, f, indent=4)
+    except:
+        return {"output": "❌ Error writing to tickets storage."}
+
+    ai_suggestion = run_ai_analysis(req.description, req.provider)
+    
+    response_text = f"✅ Ticket #{ticket_id} Created Successfully!\n" \
+                    f"Title: {req.title}\n" \
+                    f"Description: {req.description}\n" \
+                    f"--- AI Suggestions ({req.provider.capitalize()}) ---\n" \
+                    f"{ai_suggestion}"
+    return {"output": response_text}
 
 @app.post("/run")
 def run_command(req: CommandRequest):
