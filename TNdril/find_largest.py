@@ -11,7 +11,7 @@ def find_largest(numbers):
     return largest
 
 
-numbers = [12, 13, 79, 5]
+numbers= []
 
 result = find_largest(numbers)
 print(result)
