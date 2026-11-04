@@ -7,11 +7,10 @@ def find_largest(numbers):
     for number in numbers:
         if number > largest:
             largest = number
-
+        
     return largest
 
-
-numbers= []
+numbers = []
 
 result = find_largest(numbers)
 print(result)
