@@ -1,2 +1,2 @@
 def count_even(numbers):
-    count                 
+    count = 0
