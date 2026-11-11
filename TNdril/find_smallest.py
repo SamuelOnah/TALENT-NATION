@@ -10,6 +10,7 @@ def find_smallest(numbers):
 
     return smallest
 
+
 numbers = [8, 3, 12, 1, 7]
 
 result = find_smallest(numbers)
