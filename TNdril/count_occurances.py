@@ -7,4 +7,4 @@ def count_occurrences(numbers, target):
     return counter
 
 print(count_occurrences([2, 5, 2, 8, 2], 2))
-print(count_occurrences([1, 4, 7], 10))
+print(count_occurrences([1, 4, 7], 10))          

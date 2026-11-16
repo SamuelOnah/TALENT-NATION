@@ -13,7 +13,6 @@ from groq import Groq
 
 app = FastAPI(title="Campus Ticket AI Playground")
 
-
 TICKETS_FILE = Path("tickets.json")
 
 def load_tickets():
