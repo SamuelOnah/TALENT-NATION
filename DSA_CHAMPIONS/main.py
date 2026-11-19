@@ -11,6 +11,7 @@ from google import genai
 from openai import OpenAI
 from groq import Groq
 
+
 app = FastAPI(title="Campus Ticket AI Playground")
 
 TICKETS_FILE = Path("tickets.json")
