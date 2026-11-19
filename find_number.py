@@ -5,7 +5,6 @@ def find_number(numbers, target):
 
     return -1
 
-
 numbers = [10, 25, 30, 45]
 target = 30
 
