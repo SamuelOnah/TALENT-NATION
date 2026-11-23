@@ -8,3 +8,8 @@ def has_duplicates(numbers):
         seen.add(number)
 
     return False
+
+
+print(has_duplicates([1, 2, 3, 2]))  # True
+print(has_duplicates([1, 2, 3, 4]))  # False
+print(has_duplicates([]))           # False
