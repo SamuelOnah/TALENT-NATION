@@ -2,7 +2,10 @@ def reverse_list(items):
     reverse_items =  []
 
 
-    for i 
+    for i in range(items):
+        reversed_items.append(reverse_list)
 
 
-items = [10, 20, 30, 40]
+    return reversed_items
+
+
