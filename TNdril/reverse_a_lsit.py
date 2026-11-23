@@ -1,5 +1,8 @@
 def reverse_list(items):
-    reverse_items =  []
+    reverse_items = []
+
+
+    items = [10, 20, 30, 40]
 
 
     for i in range(items):
