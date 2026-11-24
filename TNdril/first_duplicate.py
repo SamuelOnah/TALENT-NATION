@@ -2,9 +2,9 @@ def first_duplicate(numbers):
     seen = set()
 
     for number in numbers:
-        if __________:
+        if number in seen:
             return number
 
-        __________
+        seen.add(number)
 
     return None
