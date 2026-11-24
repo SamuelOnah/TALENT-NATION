@@ -6,5 +6,6 @@ def first_duplicate(numbers):
             return number
 
         seen.add(number)
+        
 
     return None
