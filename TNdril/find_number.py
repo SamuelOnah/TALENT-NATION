@@ -11,4 +11,3 @@ target = 30
 
 result = find_number(numbers, target)
 print(result)
-
