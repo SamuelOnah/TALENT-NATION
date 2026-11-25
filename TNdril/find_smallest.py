@@ -1,7 +1,6 @@
 def find_smallest(numbers):
     if numbers == []:
         return None
-
     smallest = numbers[0]
 
     for number in numbers:
